@@ -31,6 +31,7 @@ class FrontalFaceDetector(object):
         self.srv_eye_state = rospy.ServiceProxy('eye_state_recogniser', EyeState, persistent=True)
         self.srv_face_id = rospy.ServiceProxy('face_id_recogniser', FaceId, persistent=True)
         self.srv_emotion = rospy.ServiceProxy('emotion_recogniser', Emotion, persistent=True)
+        self.srv_emotion_snet = rospy.ServiceProxy('emotion_recogniser_snet', Emotion, persistent=True)
         self.srv_landmarks = rospy.ServiceProxy('face_landmarks_recogniser', FaceLandmarks, persistent=True)
 
         self.sub = rospy.Subscriber(rospy.get_param('~topic_name', '/vis_dlib_cnn'), Features, self.features_callback)
@@ -78,6 +79,9 @@ class FrontalFaceDetector(object):
                                 if self.cfg.run_face_emotions:
                                     emotion_result = self.srv_pool.apply_async(self.srv_emotion, (ftr.crop, ftr.shapes))
 
+                                if self.cfg.run_face_emotions_snet:
+                                    emotion_result = self.srv_pool.apply_async(self.srv_emotion, (ftr.crop, ftr.shapes))
+
                                 if self.cfg.run_eye_state:
                                     eye_state_result = self.srv_pool.apply_async(self.srv_eye_state,
                                                                                  (ftr.crop, ftr.shapes))
@@ -86,6 +90,9 @@ class FrontalFaceDetector(object):
                                     ftr.face_id = face_id_result.get().face_id
 
                                 if self.cfg.run_face_emotions:
+                                    ftr.emotions = emotion_result.get().emotions
+                                
+                                if self.cfg.run_face_emotions_snet:
                                     ftr.emotions = emotion_result.get().emotions
 
                                 if self.cfg.run_eye_state:
@@ -108,7 +115,7 @@ if __name__ == "__main__":
         recogniser.initialise(download=False)
 
         # wait for services that the frontal face detector depends upon
-        services = ['face_landmarks_recogniser', 'emotion_recogniser', 'eye_state_recogniser', 'face_id_recogniser']
+        services = ['face_landmarks_recogniser', 'emotion_recogniser', 'emotion_recogniser_snet', 'eye_state_recogniser', 'face_id_recogniser']
         for service_name in services:
             rospy.loginfo("{} waiting for service: {}".format(node_name, service_name))
             rospy.wait_for_service(service_name, timeout=None)

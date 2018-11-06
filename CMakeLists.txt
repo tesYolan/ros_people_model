@@ -147,6 +147,7 @@ include_directories(
 install(PROGRAMS
    scripts/debugger.py
    scripts/emotion_recogniser.py
+   scripts/emotion_recogniser_snet.py
    scripts/eye_state_recogniser.py
    scripts/face_detector.py
    scripts/face_id_recogniser.py
