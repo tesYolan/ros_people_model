@@ -19,9 +19,9 @@ def handle_request(req):
         f.write(str(req))
     p = subprocess.Popen(["snet", "mpe-client", "call_server", "0x38506005d6b25386aac998448ae5eb48f87f4277", "0","10","34.216.72.29:6205", "EmotionRecognition", "classify", "image.json"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     result, err = p.communicate()
-    print(result)
+    if err != None:
+        return EmotionResponse([])
     results = str(result)
-    print(err)
 
     preprocessed_emotions = results[results.find('predictions'):results.find('bounding_boxes')].replace('predictions: ','').split("\\n")
     print(preprocessed_emotions)
